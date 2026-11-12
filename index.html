@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freddy Fazbear's Pizza</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: VT323 -->
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    
+    <style>
+        /* tipos de color de la letra y tanaño */
+        body {
+            font-family: 'VT323', monospace;
+            background-color: #050505;
+            color: #ffffff;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* coloroes principales de lka pagina */
+        .text-faz-red { color: #cc0000; }
+        .text-faz-yellow { color: #facc15; }
+        .bg-faz-red { background-color: #cc0000; }
+        .bg-faz-yellow { background-color: #facc15; }
+        .border-faz-red { border-color: #cc0000; }
+        .border-faz-yellow { border-color: #facc15; }
+
+        /* parpadeos en algunas frases */
+        @keyframes flicker {
+            0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% {
+                opacity: 1;
+            }
+            20%, 21.999%, 63%, 63.999%, 65%, 69.999% {
+                opacity: 0.4;
+            }
+        }
+        .flicker-text {
+            animation: flicker 4s infinite;
+        }
+
+        /* borde en la parte de arriba tematoizda de fnaf blanco y negro */
+        .checkerboard-border {
+            background-image: repeating-conic-gradient(#000 0% 25%, #fff 0% 50%);
+            background-position: 0 0;
+            background-size: 20px 20px;
+            height: 20px;
+            width: 100%;
+        }
+
+        /* efecto tipo camara  */
+        .crt::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.28) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 45;
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* la estatica minima en la camara */
+        @keyframes static-jitter {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(-2px, 1px); }
+            50% { transform: translate(2px, -1px); }
+            75% { transform: translate(-1px, -2px); }
+            100% { transform: translate(1px, 2px); }
+        }
+        .fnaf-static-bg {
+            position: fixed;
+            inset: -10px;
+            z-index: 44;
+            pointer-events: none;
+            opacity: 0.07;
+            background-image: radial-gradient(#ffffff 1px, transparent 0), radial-gradient(#888888 1px, transparent 0);
+            background-size: 6px 6px;
+            background-position: 0 0, 3px 3px;
+            animation: static-jitter 0.12s infinite steps(2);
+        }
+
+        /* estatica al cambiar de pestaña */
+        @keyframes fnaf-cam-static {
+            0% {
+                opacity: 0.42;
+                background-position: 0 0, 12px 24px, 0 15%;
+                transform: translateY(-2px);
+            }
+            30% {
+                opacity: 0.32;
+                background-position: -30px 18px, 8px -14px, 0 48%;
+                transform: translateY(2px);
+            }
+            65% {
+                opacity: 0.18;
+                background-position: 22px -20px, -15px 10px, 0 82%;
+                transform: translateY(-1px);
+            }
+            100% {
+                opacity: 0;
+                background-position: 0 0, 0 0, 0 100%;
+                transform: translateY(0);
+            }
+        }
+        .cam-glitch-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 70;
+            pointer-events: none;
+            opacity: 0;
+            mix-blend-mode: screen;
+            background-image:
+                radial-gradient(rgba(255, 255, 255, 0.75) 1px, transparent 0),
+                radial-gradient(rgba(160, 160, 160, 0.5) 1px, transparent 0),
+                linear-gradient(
+                    180deg,
+                    transparent 0%,
+                    rgba(255, 255, 255, 0.12) 45%,
+                    rgba(255, 255, 255, 0.35) 50%,
+                    rgba(255, 255, 255, 0.12) 55%,
+                    transparent 100%
+                );
+            background-size: 4px 4px, 7px 7px, 100% 90px;
+            background-repeat: repeat, repeat, no-repeat;
+        }
+        .cam-glitch-active {
+            animation: fnaf-cam-static 0.28s steps(3) forwards;
+        }
+
+        /* la animacion al meterse a la pagina (encendido) */
+        @keyframes crt-turn-on {
+            0% { transform: scale(1, 0.8) translate3d(0, 0, 0); filter: brightness(30); opacity: 1; }
+            5% { transform: scale(1, 0.8) translate3d(0, 100%, 0); }
+            100% { transform: scale(1, 1) translate3d(0, 0, 0); filter: brightness(1); opacity: 1; }
+        }
+        .crt-on {
+            animation: crt-turn-on 0.5s linear forwards;
+        }
+
+        /* las pestañas retro */
+        ::-webkit-scrollbar { width: 12px; }
+        ::-webkit-scrollbar-track { background: #000; border-left: 2px solid #cc0000; }
+        ::-webkit-scrollbar-thumb { background: #cc0000; border: 1px solid #facc15; }
+
+        /* los botones tematizado a un arcade */
+        .arcade-btn {
+            position: relative;
+            display: inline-block;
+            transition: all 0.1s;
+        }
+        .arcade-btn:active {
+            transform: scale(0.95);
+        }
+        .arcade-btn:hover {
+            text-shadow: 0 0 10px currentColor;
+        }
+
+        /* boton de activacion en la navegacion (color amarrillo) */
+        .nav-btn.active {
+            color: #facc15;
+            border-bottom: 2px solid #facc15;
+        }
+    </style>
+</head>
+<body class="crt min-h-screen flex flex-col">
+
+    <!-- coloca la estataica de distorcion sutil -->
+    <div class="fnaf-static-bg"></div>
+
+    <!-- distorcion  al cambiar de pestaña -->
+    <div id="cam-glitch" class="cam-glitch-overlay"></div>
+
+    <!--marco tipo camara en la pantalla -->
+    <div class="fixed inset-2 border-2 border-white/25 pointer-events-none z-40">
+        <!-- Esquinas reforzadas tipo monitor -->
+        <div class="absolute -top-0.5 -left-0.5 w-8 h-8 border-t-4 border-l-4 border-white/70"></div>
+        <div class="absolute -top-0.5 -right-0.5 w-8 h-8 border-t-4 border-r-4 border-white/70"></div>
+        <div class="absolute -bottom-0.5 -left-0.5 w-8 h-8 border-b-4 border-l-4 border-white/70"></div>
+        <div class="absolute -bottom-0.5 -right-0.5 w-8 h-8 border-b-4 border-r-4 border-white/70"></div>
+
+        <!-- iconos tipicos de una camara  -->
+        <div class="absolute bottom-3 left-5 flex items-center gap-2 text-white/80 text-2xl bg-black/60 px-3 py-0.5 border border-white/20">
+            <span class="w-3 h-3 bg-faz-red rounded-full animate-ping"></span>
+            <span class="text-faz-red font-bold">REC</span>
+            <span id="global-cam-label" class="text-white ml-2">CÁM-01 [ESCENARIO PRINCIPAL]</span>
+        </div>
+        <div class="absolute bottom-3 right-5 text-white/80 text-2xl bg-black/60 px-3 py-0.5 border border-white/20" id="global-camera-time">
+            12:00 AM
+        </div>
+    </div>
+
+    <!-- cabeza de la pagina donde sucede la magia -->
+    <header class="sticky top-0 z-40 bg-black/90 border-b-2 border-faz-red shadow-[0_0_15px_#cc0000]">
+        <div class="checkerboard-border"></div>
+        <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+            
+            <!-- titulo princuipal pe -->
+            <div class="text-center md:text-left mb-4 md:mb-0">
+                <h1 class="text-4xl md:text-5xl text-faz-yellow flicker-text font-bold tracking-widest uppercase">
+                    Freddy Fazbear's
+                </h1>
+                <h2 class="text-xl text-faz-red tracking-[0.2em] uppercase">
+                    Pizza y Entretenimiento
+                </h2>
+            </div>
+
+            <!-- navegacion entre paginas -->
+            <nav class="flex flex-wrap justify-center gap-4 md:gap-8 text-2xl">
+                <button onclick="navigate('inicio')" id="btn-inicio" class="nav-btn arcade-btn active text-faz-red hover:text-faz-yellow uppercase transition-colors">Inicio</button>
+                <button onclick="navigate('menu')" id="btn-menu" class="nav-btn arcade-btn text-faz-red hover:text-faz-yellow uppercase transition-colors">Menú</button>
+                <button onclick="navigate('fiestas')" id="btn-fiestas" class="nav-btn arcade-btn text-faz-red hover:text-faz-yellow uppercase transition-colors">Fiestas</button>
+                <button onclick="navigate('tienda')" id="btn-tienda" class="nav-btn arcade-btn text-faz-red hover:text-faz-yellow uppercase transition-colors">Tienda</button>
+            </nav>
+
+            <!-- carrito de pedidos -->
+            <button onclick="toggleCart()" class="arcade-btn mt-4 md:mt-0 bg-faz-red text-black border-2 border-faz-yellow px-4 py-2 text-2xl font-bold uppercase hover:bg-faz-yellow hover:border-faz-red hover:text-faz-red transition-colors flex items-center gap-2">
+                <span>🍕 Caja de Pizza</span>
+                <span id="cart-count" class="bg-black text-faz-yellow px-2 py-0.5 rounded-full border border-faz-yellow text-xl">0</span>
+            </button>
+        </div>
+        <div class="checkerboard-border"></div>
+    </header>
+
+    <!-- contenedor de lo principal del codgio -->
+    <main id="main-content" class="crt-on flex-grow container mx-auto px-4 py-8 pb-16 relative">
+
+        <!-- seccion pruincipal   (pantalla de inicio) -->
+        <section id="sec-inicio" class="page-section">
+            <div class="border-2 border-faz-red rounded-lg p-1 relative overflow-hidden bg-zinc-900 shadow-[0_0_30px_rgba(204,0,0,0.3)]">
+                <!-- marco tipo de camara  -->
+                <div class="border border-zinc-700 h-[60vh] md:h-[70vh] flex flex-col justify-center items-center relative bg-[url('https://placehold.co/1200x800/111/222?text=+')] bg-cover bg-center bg-no-repeat" style="background-blend-mode: multiply;">
+                    
+                    <!-- iconos principales de una camara -->
+                    <div class="absolute top-4 left-4 text-faz-red text-2xl flex items-center gap-2">
+                        <div class="w-3 h-3 bg-faz-red rounded-full animate-pulse"></div>
+                        <span>GRABANDO</span>
+                    </div>
+                    <div class="absolute top-4 right-4 text-white/70 text-2xl uppercase">
+                        CÁM-01 [Escenario Principal]
+                    </div>
+                    <div class="absolute bottom-4 left-4 text-white/50 text-xl" id="camera-time">
+                        --:-- AM
+                    </div>
+
+                    <!-- contenido central de la pagina -->
+                    <div class="text-center z-10 p-6 bg-black/60 border-2 border-faz-yellow rounded-xl backdrop-blur-sm max-w-3xl transform hover:scale-105 transition-transform duration-500 cursor-default">
+                        <p class="text-faz-yellow text-2xl md:text-3xl mb-4 flicker-text">¡DONDE LA FANTASÍA Y LA DIVERSIÓN COBRAN VIDA!</p>
+                        <h2 class="text-6xl md:text-8xl text-white font-bold drop-shadow-[0_5px_5px_rgba(204,0,0,0.8)] tracking-tighter">
+                            ¡BIENVENIDO A <span class="text-faz-red">FREDDY'S!</span>
+                        </h2>
+                        <button onclick="navigate('menu')" class="mt-8 bg-transparent border-2 border-faz-yellow text-faz-yellow text-2xl px-6 py-2 uppercase hover:bg-faz-yellow hover:text-black transition-colors arcade-btn">
+                            Hacer un Pedido Ahora
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- seccion menu -->
+        <section id="sec-menu" class="page-section hidden">
+            <h2 class="text-5xl text-faz-yellow text-center mb-8 border-b-2 border-faz-red pb-4 inline-block w-full uppercase">Menú de la Pizzería</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Item 1 picha -->
+                <div class="border-2 border-dashed border-zinc-600 bg-zinc-900 p-4 rounded hover:border-faz-red transition-colors flex flex-col group">
+                    <div class="h-48 bg-black border border-zinc-800 mb-4 flex items-center justify-center text-6xl group-hover:scale-105 transition-transform">🍕</div>
+                    <h3 class="text-3xl text-faz-yellow uppercase mb-2">La Especial de Chica</h3>
+                    <p class="text-xl text-zinc-400 mb-4 flex-grow">Nuestra clásica pizza de pepperoni con EXTRA queso. ¡No podrás resistirte!</p>
+                    <div class="flex justify-between items-center border-t border-zinc-700 pt-4 mt-auto">
+                        <span class="text-3xl text-white">$250.00 MXN</span>
+                        <button onclick="addToCart('La Especial de Chica', 250.00, '🍕', 'pedido')" class="arcade-btn bg-faz-red text-white px-4 py-2 text-xl hover:bg-white hover:text-faz-red border-2 border-faz-red transition-colors">AÑADIR</button>
+                    </div>
+                </div>
+
+                <!-- Item 2 fluidos de foxy -->
+                <div class="border-2 border-dashed border-zinc-600 bg-zinc-900 p-4 rounded hover:border-faz-red transition-colors flex flex-col group">
+                    <div class="h-48 bg-black border border-zinc-800 mb-4 flex items-center justify-center text-6xl group-hover:scale-105 transition-transform">🥤</div>
+                    <h3 class="text-3xl text-faz-yellow uppercase mb-2">Ponche Pirata de Foxy</h3>
+                    <p class="text-xl text-zinc-400 mb-4 flex-grow">Bebida de frutas color rojo intenso. ¡Te dará energías para toda la noche!</p>
+                    <div class="flex justify-between items-center border-t border-zinc-700 pt-4 mt-auto">
+                        <span class="text-3xl text-white">$65.00 MXN</span>
+                        <button onclick="addToCart('Ponche Pirata de Foxy', 65.00, '🥤', 'pedido')" class="arcade-btn bg-faz-red text-white px-4 py-2 text-xl hover:bg-white hover:text-faz-red border-2 border-faz-red transition-colors">AÑADIR</button>
+                    </div>
+                </div>
+
+                <!-- Item 3 cumcake -->
+                <div class="border-2 border-dashed border-zinc-600 bg-zinc-900 p-4 rounded hover:border-faz-red transition-colors flex flex-col group">
+                    <div class="h-48 bg-black border border-zinc-800 mb-4 flex items-center justify-center text-6xl group-hover:scale-105 transition-transform">🧁</div>
+                    <h3 class="text-3xl text-faz-yellow uppercase mb-2">Cupcakes Dorados</h3>
+                    <p class="text-xl text-zinc-400 mb-4 flex-grow">Postres decorados estilo el icónico cupcake. Suaves y deliciosos.</p>
+                    <div class="flex justify-between items-center border-t border-zinc-700 pt-4 mt-auto">
+                        <span class="text-3xl text-white">$85.00 MXN</span>
+                        <button onclick="addToCart('Cupcakes Dorados', 85.00, '🧁', 'pedido')" class="arcade-btn bg-faz-red text-white px-4 py-2 text-xl hover:bg-white hover:text-faz-red border-2 border-faz-red transition-colors">AÑADIR</button>
+                    </div>
+                </div>
+
+                <!-- Item 4 combasooo -->
+                <div class="border-2 border-dashed border-zinc-600 bg-zinc-900 p-4 rounded hover:border-faz-red transition-colors flex flex-col group">
+                    <div class="h-48 bg-black border border-zinc-800 mb-4 flex items-center justify-center text-6xl group-hover:scale-105 transition-transform">🍟</div>
+                    <h3 class="text-3xl text-faz-yellow uppercase mb-2">Combo Mordida del '87</h3>
+                    <p class="text-xl text-zinc-400 mb-4 flex-grow">Pizza familiar + Papas + Refresco grande. Ideal para compartir el pánico.</p>
+                    <div class="flex justify-between items-center border-t border-zinc-700 pt-4 mt-auto">
+                        <span class="text-3xl text-white">$390.00 MXN</span>
+                        <button onclick="addToCart('Combo Mordida del 87', 390.00, '🍟', 'pedido')" class="arcade-btn bg-faz-red text-white px-4 py-2 text-xl hover:bg-white hover:text-faz-red border-2 border-faz-red transition-colors">AÑADIR</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- seccion de fiesta -->
+        <section id="sec-fiestas" class="page-section hidden max-w-4xl mx-auto">
+            
+            <div class="bg-[#e6c27a] text-black p-8 md:p-12 rounded-sm shadow-[inset_0_0_40px_rgba(0,0,0,0.5),0_0_20px_rgba(204,0,0,0.2)] border-4 border-[#b38b4d] relative transform -rotate-1">
+                
+                <!-- contarrto y la marca de agua -->
+                <div class="absolute top-4 right-8 border-4 border-red-800 text-red-800 font-bold text-3xl p-2 transform rotate-12 opacity-70">
+                    APROBADO
+                </div>
+                <div class="absolute top-2 left-2 w-16 h-16 border-b-2 border-r-2 border-black opacity-30"></div>
+                
+                <div class="text-center mb-10 border-b-4 border-black pb-6">
+                    <h2 class="text-5xl font-bold uppercase tracking-widest">Contrato de Eventos Especiales</h2>
+                    <p class="text-2xl mt-2 font-bold">Fazbear Entertainment, Inc.</p>
+                    <p class="text-xl">Formulario de Reserva - 198X</p>
+                </div>
+
+                <form id="party-form" class="space-y-6 text-2xl" onsubmit="submitForm(event)">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex flex-col">
+                            <label class="font-bold mb-1">Nombre del Cliente (Padre/Tutor):</label>
+                            <input type="text" id="nombrePadre" required class="bg-transparent border-b-2 border-black outline-none focus:border-red-800 font-inherit p-1">
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="font-bold mb-1">Nombre del Cumpleañero(a):</label>
+                            <input type="text" id="nombreCumple" required class="bg-transparent border-b-2 border-black outline-none focus:border-red-800 font-inherit p-1">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex flex-col">
+                            <label class="font-bold mb-1">Fecha Solicitada:</label>
+                            <input type="date" id="fechaFiesta" required class="bg-transparent border-b-2 border-black outline-none focus:border-red-800 font-inherit p-1">
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="font-bold mb-1">Número de Invitados (Niños):</label>
+                            <input type="number" id="invitadosFiesta" min="1" required class="bg-transparent border-b-2 border-black outline-none focus:border-red-800 font-inherit p-1">
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col mt-6">
+                        <label class="font-bold mb-2">Seleccione su Paquete:</label>
+                        <div class="space-y-3 bg-[#d4af66] p-4 border-2 border-[#b38b4d]">
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="radio" name="paquete" value="Paquete Fazbear" checked class="w-5 h-5 accent-black">
+                                <span><strong class="text-red-900">Paquete Fazbear:</strong> Pizza ilimitada, pastel estándar, show de escenario (1 hora).</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="radio" name="paquete" value="Paquete Cueva del Pirata" class="w-5 h-5 accent-black">
+                                <span><strong class="text-red-900">Paquete Cueva del Pirata:</strong> Temática pirata, juegos con Foxy, pizza y parches oculares.</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col mt-6">
+                        <label class="font-bold mb-1 flex items-center gap-2">
+                            <input type="checkbox" required class="w-5 h-5 accent-black">
+                            Acepto los Términos y Condiciones.
+                        </label>
+                        <p class="text-sm text-gray-700 leading-tight mt-1 ml-7">
+                            *Fazbear Entertainment no se hace responsable por daños a la propiedad, lesiones personales, mutilación o desaparición accidental que ocurra dentro de las instalaciones. Al firmar, usted renuncia a su derecho de demandar.
+                        </p>
+                    </div>
+
+                    <div class="pt-8 text-center">
+                        <button type="submit" id="btn-submit-party" class="arcade-btn bg-black text-white px-8 py-3 text-3xl hover:bg-red-800 transition-colors uppercase border-4 border-black hover:border-red-900 font-bold">
+                            Firmar y Enviar Solicitud
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- mensaje al acompletar el formulario -->
+            <div id="form-success" class="hidden mt-8 p-6 border-2 border-faz-yellow bg-zinc-900 text-center">
+                <p class="text-3xl text-faz-yellow">¡Contrato firmado y archivado en la oficina!</p>
+                <p class="text-xl text-white mt-2">La gerencia se pondrá en contacto... si es necesario.</p>
+            </div>
+        </section>
+
+        <!-- la merch -->
+        <section id="sec-tienda" class="page-section hidden">
+            <h2 class="text-5xl text-faz-yellow text-center mb-8 border-b-2 border-faz-red pb-4 inline-block w-full uppercase">Tienda de Recuerdos - Merch Oficial</h2>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                <!-- Merch 1 osito kawai -->
+                <div class="bg-black border-2 border-zinc-700 p-4 text-center hover:border-faz-yellow transition-colors group">
+                    <div class="text-7xl mb-4 group-hover:-translate-y-2 transition-transform">🧸</div>
+                    <h3 class="text-2xl text-white uppercase mb-2">Peluche Freddy</h3>
+                    <p class="text-faz-yellow text-3xl mb-4">$350.00 MXN</p>
+                    <button onclick="addToCart('Peluche Freddy', 350.00, '🧸', 'merch')" class="arcade-btn w-full bg-zinc-800 text-white px-2 py-2 text-xl hover:bg-faz-yellow hover:text-black transition-colors uppercase">Comprar</button>
+                </div>
+                <!-- Merch 2 gitarrita de scott (lo mate yo y se lo robe) -->
+                <div class="bg-black border-2 border-zinc-700 p-4 text-center hover:border-faz-yellow transition-colors group">
+                    <div class="text-7xl mb-4 group-hover:-translate-y-2 transition-transform">🎸</div>
+                    <h3 class="text-2xl text-white uppercase mb-2">Guitarra Bonnie (Juguete)</h3>
+                    <p class="text-faz-yellow text-3xl mb-4">$220.00 MXN</p>
+                    <button onclick="addToCart('Guitarra Bonnie', 220.00, '🎸', 'merch')" class="arcade-btn w-full bg-zinc-800 text-white px-2 py-2 text-xl hover:bg-faz-yellow hover:text-black transition-colors uppercase">Comprar</button>
+                </div>
+                <!-- Merch 3 gorrita bien chaka -->
+                <div class="bg-black border-2 border-zinc-700 p-4 text-center hover:border-faz-yellow transition-colors group">
+                    <div class="text-7xl mb-4 group-hover:-translate-y-2 transition-transform">🧢</div>
+                    <h3 class="text-2xl text-white uppercase mb-2">Gorra de Guardia</h3>
+                    <p class="text-faz-yellow text-3xl mb-4">$260.00 MXN</p>
+                    <button onclick="addToCart('Gorra Seguridad', 260.00, '🧢', 'merch')" class="arcade-btn w-full bg-zinc-800 text-white px-2 py-2 text-xl hover:bg-faz-yellow hover:text-black transition-colors uppercase">Comprar</button>
+                </div>
+                <!-- Merch 4 cuadro bien sepsi de freddy y chica -->
+                <div class="bg-black border-2 border-zinc-700 p-4 text-center hover:border-faz-yellow transition-colors group">
+                    <div class="text-7xl mb-4 group-hover:-translate-y-2 transition-transform">🖼️</div>
+                    <h3 class="text-2xl text-white uppercase mb-2">Póster "¡Celebra!"</h3>
+                    <p class="text-faz-yellow text-3xl mb-4">$150.00 MXN</p>
+                    <button onclick="addToCart('Póster ¡Celebra!', 150.00, '🖼️', 'merch')" class="arcade-btn w-full bg-zinc-800 text-white px-2 py-2 text-xl hover:bg-faz-yellow hover:text-black transition-colors uppercase">Comprar</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- carrito de pedidos -->
+    <div id="cart-sidebar" class="fixed top-0 right-0 hidden w-full md:w-[400px] h-screen bg-black border-l-4 border-faz-red z-50 shadow-[-10px_0_30px_rgba(204,0,0,0.5)] flex-col">
+        <!-- Header Carrito -->
+        <div class="p-6 border-b-4 border-faz-red bg-zinc-900 flex justify-between items-center checkerboard-border relative" style="height: auto; background-image: none;">
+            <div class="absolute inset-0 checkerboard-border opacity-20 pointer-events-none"></div>
+            <h2 class="text-4xl text-faz-yellow font-bold uppercase relative z-10">Caja de Pizza</h2>
+            <button onclick="toggleCart()" class="text-4xl text-white hover:text-faz-red arcade-btn relative z-10">✖</button>
+        </div>
+
+        <!-- las lista de items adquiridos -->
+        <div class="flex-grow overflow-y-auto p-4 space-y-4" id="cart-items-container">
+            <!-- items se colocan -->
+            <p class="text-zinc-500 text-2xl text-center mt-10">Tu caja está vacía.<br>¡Añade algo de diversión!</p>
+        </div>
+
+        <!-- la opciones de mesa si pedistwe y las de propietario si compraste merch-->
+        <div id="cart-extra-inputs" class="hidden px-6 pt-4 bg-zinc-900 border-t-2 border-zinc-800 space-y-3">
+            <!-- elegir tu mesa -->
+            <div id="mesa-input-group" class="hidden">
+                <label class="block text-xl text-faz-yellow uppercase mb-1">🍕 Selecciona tu Mesa:</label>
+                <select id="select-mesa" class="w-full bg-black border-2 border-faz-red text-white text-xl p-1.5 outline-none focus:border-faz-yellow">
+                    <option value="">-- Elige una mesa --</option>
+                    <option value="Mesa 1">Mesa 1 (Escenario Principal)</option>
+                    <option value="Mesa 2">Mesa 2 (Escenario Principal)</option>
+                    <option value="Mesa 3">Mesa 3 (Zona Arcade)</option>
+                    <option value="Mesa 4">Mesa 4 (Zona Arcade)</option>
+                    <option value="Mesa 5">Mesa 5 (Cueva del Pirata)</option>
+                    <option value="Mesa 6">Mesa 6 (Cueva del Pirata)</option>
+                    <option value="Mesa 7">Mesa 7 (Pasillo Oeste)</option>
+                    <option value="Mesa 8">Mesa 8 (Pasillo Este)</option>
+                </select>
+            </div>
+            <!-- se coloca el nom,bre del propietario pe -->
+            <div id="merch-input-group" class="hidden">
+                <label class="block text-xl text-faz-yellow uppercase mb-1">🧸 Nombre del Propietario (Merch):</label>
+                <input type="text" id="input-propietario" placeholder="Escribe tu nombre..." class="w-full bg-black border-2 border-faz-red text-white text-xl p-1.5 outline-none focus:border-faz-yellow">
+            </div>
+        </div>
+
+        <!-- accion del carrito -->
+        <div class="p-6 bg-zinc-900 border-t-2 border-faz-red">
+            <div class="flex justify-between items-center mb-4 text-3xl">
+                <span class="text-white uppercase">Total:</span>
+                <span class="text-faz-yellow" id="cart-total">$0.00 MXN</span>
+            </div>
+            <button onclick="checkout()" id="btn-checkout" class="w-full arcade-btn bg-faz-red text-white py-3 text-3xl font-bold uppercase hover:bg-white hover:text-faz-red border-4 border-faz-red transition-colors">
+                Procesar Pedido
+            </button>
+        </div>
+    </div>
+
+    <!-- oscuridad al ver las partes excternas del carrito -->
+    <div id="cart-overlay" onclick="toggleCart()" class="fixed inset-0 bg-black/70 z-40 hidden backdrop-blur-sm transition-opacity"></div>
+
+    <!--alerta de mensaje o advertencia -->
+    <div id="msg-box" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-black/80 backdrop-blur-md">
+        <div class="bg-zinc-900 border-4 border-faz-red p-8 max-w-md w-full mx-4 text-center transform scale-95 transition-transform" id="msg-box-content">
+            <h3 class="text-4xl text-faz-yellow mb-4" id="msg-title">Mensaje</h3>
+            <p class="text-2xl text-white mb-8" id="msg-text">Contenido del mensaje.</p>
+            <button onclick="closeMsgBox()" class="arcade-btn bg-faz-red text-white px-6 py-2 text-2xl uppercase hover:bg-white hover:text-faz-red border-2 border-faz-red transition-colors">
+                Aceptar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- se va al registro ---
+        const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbysGefqhbWuUJtVWO9QaYhVfdL54ZEkCKXHNxuD89ynY1reI_vyewo1v5wR5e1Qm_unVg/exec";
+
+        // --- lo global ---
+        let cart = [];
+        let isCartOpen = false;
+
+        // nombres de cada pestaña en la camra (icono)
+        const camLabels = {
+            'inicio': 'CÁM-01 [ESCENARIO PRINCIPAL]',
+            'menu': 'CÁM-02 [COCINA Y COMEDOR]',
+            'fiestas': 'CÁM-03 [SALÓN DE FIESTAS]',
+            'tienda': 'CÁM-04 [RINCON DE PREMIOS]'
+        };
+
+        // ---se coloca el efecto de distorcion ---
+        function triggerCameraStatic() {
+            const glitchEl = document.getElementById('cam-glitch');
+            glitchEl.classList.remove('cam-glitch-active');
+            void glitchEl.offsetWidth; // Reinicia la animación CSS
+            glitchEl.classList.add('cam-glitch-active');
+        }
+
+        // --- hace el tipico efecto al cambiar de pestaña ---
+        function navigate(sectionId) {
+            triggerCameraStatic();
+
+            document.querySelectorAll('.page-section').forEach(sec => {
+                sec.classList.add('hidden');
+            });
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            document.getElementById('sec-' + sectionId).classList.remove('hidden');
+            document.getElementById('btn-' + sectionId).classList.add('active');
+
+            // se acatualiza la etiqeuta del monitor mostrado
+            const camLabelEl = document.getElementById('global-cam-label');
+            if (camLabelEl && camLabels[sectionId]) {
+                camLabelEl.innerText = camLabels[sectionId];
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- reloj con la hora exacta de la camra  ---
+        function updateCameraTime() {
+            const now = new Date();
+            let hours = now.getHours();
+            let ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            let minutes = now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes();
+            const timeStr = `${hours}:${minutes} ${ampm}`;
+
+            const timeEl = document.getElementById('camera-time');
+            const globalTimeEl = document.getElementById('global-camera-time');
+            if (timeEl) timeEl.innerText = timeStr;
+            if (globalTimeEl) globalTimeEl.innerText = timeStr;
+        }
+        setInterval(updateCameraTime, 1000);
+        updateCameraTime();
+
+        // --- magia que hace que funcionwe el carrito ---
+        function addToCart(name, price, icon, category) {
+            const existingItem = cart.find(item => item.name === name);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ name, price, icon, category, quantity: 1 });
+            }
+            updateCartUI();
+            
+            const cartBtn = document.querySelector('button[onclick="toggleCart()"]');
+            cartBtn.classList.add('animate-pulse', 'bg-faz-yellow', 'text-black');
+            setTimeout(() => {
+                cartBtn.classList.remove('animate-pulse', 'bg-faz-yellow', 'text-black');
+            }, 500);
+        }
+
+        function removeFromCart(index) {
+            if(cart[index].quantity > 1){
+                cart[index].quantity -= 1;
+            } else {
+                cart.splice(index, 1);
+            }
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const container = document.getElementById('cart-items-container');
+            const countBadge = document.getElementById('cart-count');
+            const totalEl = document.getElementById('cart-total');
+            const extraInputs = document.getElementById('cart-extra-inputs');
+            const mesaGroup = document.getElementById('mesa-input-group');
+            const merchGroup = document.getElementById('merch-input-group');
+
+            container.innerHTML = '';
+
+            let totalItems = 0;
+            let totalPrice = 0;
+
+            const hasComida = cart.some(item => item.category === 'pedido');
+            const hasMerch = cart.some(item => item.category === 'merch');
+
+            if (cart.length === 0) {
+                container.innerHTML = '<p class="text-zinc-500 text-2xl text-center mt-10">Tu caja está vacía.<br>¡Añade algo de diversión!</p>';
+                extraInputs.classList.add('hidden');
+            } else {
+                extraInputs.classList.remove('hidden');
+                
+                if (hasComida) {
+                    mesaGroup.classList.remove('hidden');
+                } else {
+                    mesaGroup.classList.add('hidden');
+                }
+
+                if (hasMerch) {
+                    merchGroup.classList.remove('hidden');
+                } else {
+                    merchGroup.classList.add('hidden');
+                }
+
+                cart.forEach((item, index) => {
+                    totalItems += item.quantity;
+                    totalPrice += item.price * item.quantity;
+
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'bg-black border border-zinc-700 p-3 flex justify-between items-center';
+                    itemDiv.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl">${item.icon}</span>
+                            <div>
+                                <h4 class="text-xl text-white leading-tight uppercase">${item.name}</h4>
+                                <span class="text-faz-yellow text-lg">$${item.price.toFixed(2)} MXN x ${item.quantity}</span>
+                            </div>
+                        </div>
+                        <button onclick="removeFromCart(${index})" class="text-faz-red hover:text-white text-3xl arcade-btn px-2">🗑</button>
+                    `;
+                    container.appendChild(itemDiv);
+                });
+            }
+
+            countBadge.innerText = totalItems;
+            totalEl.innerText = '$' + totalPrice.toFixed(2) + ' MXN';
+        }
+
+        function toggleCart() {
+            const sidebar = document.getElementById('cart-sidebar');
+            const overlay = document.getElementById('cart-overlay');
+            
+            isCartOpen = !isCartOpen;
+            
+            if (isCartOpen) {
+                sidebar.classList.remove('hidden');
+                sidebar.classList.add('flex');
+                overlay.classList.remove('hidden');
+                document.body.style.overflowY = 'hidden';
+            } else {
+                sidebar.classList.add('hidden');
+                sidebar.classList.remove('flex');
+                overlay.classList.add('hidden');
+                document.body.style.overflowY = 'auto';
+            }
+        }
+
+        // --- enviar losd atos al momento de perimitir el carrito accione y amnde los productos al registrador ---
+        async function enviarAGoogleSheets(datos) {
+            return fetch(URL_GOOGLE, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(datos)
+            });
+        }
+
+        // --- procesar las co0mpras de la merch y pedios ---
+        async function checkout() {
+            if(cart.length === 0) {
+                showMsgBox('Error', 'Tu caja está vacía. Añade algo antes de procesar el pedido.');
+                return;
+            }
+
+            // separaciom de la comida y mercha pedida en el carrito
+            const itemsComida = cart.filter(item => item.category === 'pedido');
+            const itemsMerch = cart.filter(item => item.category === 'merch');
+
+            const mesaSeleccionada = document.getElementById('select-mesa').value;
+            const propietarioMerch = document.getElementById('input-propietario').value.trim();
+
+            // si eligio mesa sucede 
+            if (itemsComida.length > 0 && !mesaSeleccionada) {
+                showMsgBox('Falta Mesa', 'Por favor selecciona la mesa donde te encuentras antes de procesar tu comida.');
+                return;
+            }
+
+            // si puso nombre de propietario sucede 
+            if (itemsMerch.length > 0 && !propietarioMerch) {
+                showMsgBox('Falta Propietario', 'Por favor escribe el nombre del propietario para tu merch.');
+                return;
+            }
+
+            const btnCheckout = document.getElementById('btn-checkout');
+            btnCheckout.innerText = 'ENVIANDO A OFICINA...';
+            btnCheckout.disabled = true;
+
+            try {
+                // separacion al pedir en mesa o la merch del propietario y colocar el precio en pesos mexichango
+                if (itemsComida.length > 0) {
+                    const resumenComida = itemsComida.map(i => `${i.quantity}x ${i.name}`).join(', ');
+                    const totalComida = itemsComida.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+                    
+                    await enviarAGoogleSheets({
+                        tipo: 'pedido',
+                        articulos: resumenComida,
+                        total: '$' + totalComida.toFixed(2) + ' MXN',
+                        mesa: mesaSeleccionada
+                    });
+                }
+
+                // enviar si hay merch a la hoja que dice mercancia en los registros
+                if (itemsMerch.length > 0) {
+                    const resumenMerch = itemsMerch.map(i => `${i.quantity}x ${i.name}`).join(', ');
+                    const totalMerch = itemsMerch.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+                    
+                    await enviarAGoogleSheets({
+                        tipo: 'merch',
+                        articulos: resumenMerch,
+                        total: '$' + totalMerch.toFixed(2) + ' MXN',
+                        propietario: propietarioMerch
+                    });
+                }
+
+                showMsgBox('¡Pedido Registrado!', 'Tu orden ha llegado a la oficina del gerente. Espérala en la puerta... si te atreves.');
+                cart = [];
+                document.getElementById('select-mesa').value = '';
+                document.getElementById('input-propietario').value = '';
+                updateCartUI();
+                toggleCart();
+            } catch (error) {
+                showMsgBox('Error de Sistema', 'Las líneas de Fazbear están caídas. Intenta de nuevo.');
+            } finally {
+                btnCheckout.innerText = 'PROCESAR PEDIDO';
+                btnCheckout.disabled = false;
+            }
+        }
+
+        // --- formulario de fiesta aqui sucede la magia y se guarda ---
+        async function submitForm(event) {
+            event.preventDefault();
+            
+            const btnSubmit = document.getElementById('btn-submit-party');
+            btnSubmit.innerText = 'ARCHIVANDO CONTRATO...';
+            btnSubmit.disabled = true;
+
+            const nombrePadre = document.getElementById('nombrePadre').value;
+            const nombreCumple = document.getElementById('nombreCumple').value;
+            const fechaFiesta = document.getElementById('fechaFiesta').value;
+            const invitadosFiesta = document.getElementById('invitadosFiesta').value;
+            const paqueteSeleccionado = document.querySelector('input[name="paquete"]:checked').value;
+
+            const datosFiesta = {
+                tipo: 'fiesta',
+                nombre: `${nombrePadre} (Cumpleañero: ${nombreCumple})`,
+                fechaFiesta: fechaFiesta,
+                paquete: paqueteSeleccionado,
+                invitados: invitadosFiesta,
+                peticiones: 'Términos aceptados'
+            };
+
+            try {
+                await enviarAGoogleSheets(datosFiesta);
+                document.getElementById('party-form').style.display = 'none';
+                document.getElementById('form-success').classList.remove('hidden');
+            } catch (error) {
+                showMsgBox('Error', 'No se pudo archivar el contrato. Intenta de nuevo.');
+                btnSubmit.innerText = 'FIRMAR Y ENVIAR SOLICITUD';
+                btnSubmit.disabled = false;
+            }
+        }
+
+        // --- mesnaje custoimizado al aceptar en general ---
+        function showMsgBox(title, text) {
+            document.getElementById('msg-title').innerText = title;
+            document.getElementById('msg-text').innerText = text;
+            const msgBox = document.getElementById('msg-box');
+            const msgContent = document.getElementById('msg-box-content');
+            
+            msgBox.classList.remove('hidden');
+            setTimeout(() => {
+                msgContent.classList.remove('scale-95');
+                msgContent.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeMsgBox() {
+            const msgBox = document.getElementById('msg-box');
+            const msgContent = document.getElementById('msg-box-content');
+            
+            msgContent.classList.remove('scale-100');
+            msgContent.classList.add('scale-95');
+            setTimeout(() => {
+                msgBox.classList.add('hidden');
+            }, 150);
+        }
+
+        // inicialización
+        window.onload = () => {
+            updateCartUI();
+            triggerCameraStatic();
+        };
+    </script>
+</body>
+</html>                
